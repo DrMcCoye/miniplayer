@@ -1,0 +1,49 @@
+body { 
+    padding-top: 70px; 
+	background-color: black;
+	color: white;
+}
+
+.footer {
+    border-top: 1px solid #ccc;
+    padding-top: 10px;
+    text-align: center;
+}
+
+.articleTitle:hover, .articleTitle:focus {
+    text-decoration: none;
+}
+
+.adminTable {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+#errorPanel {
+    padding-top: 30px;
+    padding-bottom: 10px;
+}
+
+#Artist0 {
+    text-align: center;
+    height: 600px;
+    padding: 10px;
+}   
+
+#Pochette {
+    height: 150px;
+    padding: 10px;
+}   
+
+#Artist {
+    font-size: 2.5em;
+    font-weight: bold;
+}
+
+#Titre {
+    font-size: 1.8em;
+}
+
+#slider_seek {
+    padding: 10px;
+}

@@ -1,0 +1,21 @@
+{% extends "layout.html.twig" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+    {% if playlists %}
+        <div class="list-group">
+            {% for playlist in playlists %}
+                <a href="{{ path('play_media', { 'id': playlist.deezer }) }}" class="list-group-item">
+                    <img src="{{ playlist.image }}" alt="{{ playlist.name }}" height="80" width="80">
+                         {{ playlist.name }}
+                <span class="small">Submitted by {{ playlist.author.username }}</span>
+                </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-warning">
+            No Playlists found.
+        </div>
+    {% endif %}
+{% endblock %}

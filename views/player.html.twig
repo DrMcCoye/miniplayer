@@ -1,0 +1,147 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <link href="{{ app.request.basepath }}/css/miniplayer.css" rel="stylesheet">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="http://cdn-files.deezer.com/js/min/dz.js"></script>
+    <script type="text/javascript" src="{{ app.request.basepath }}/lib/musicstory/MusicStoryAPI.class.min.js"></script>
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+    <title>WebPlaylists - {% block title %}{% endblock %}</title>
+</head>
+
+    <body>
+        
+    <!-- Caroussel -->
+    <div id="carousel" class="carousel slide" data-ride="carousel">
+        <ol class="carousel-indicators">
+            <li data-target="#carousel" data-slide-to="0" class="active"></li>
+<!--        <li data-target="#carousel" data-slide-to="1"></li>
+            <li data-target="#carousel" data-slide-to="2"></li>
+            <li data-target="#carousel" data-slide-to="4"></li> -->
+        </ol>
+        <div class="carousel-inner">
+            <div class="item active"> 
+                <img id="Artist0" alt="Architecture" height="100" src="{{ app.request.basepath }}/images/slide0.jpg">
+            </div>
+<!--        <div class="item"> <img alt="Architecture" src="assets/img/archi2.jpg">
+        </div>
+        <div class="item"> <img alt="Architecture" src="assets/img/archi3.jpg">
+        </div>
+        <div class="item"> <img alt="Architecture" src="assets/img/archi4.jpg">
+        </div> -->
+        </div> 
+    </div>
+    <div id="dz-root"></div>
+    <!-- Pied de page
+    ================================================== -->
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2"><img id="Pochette" alt="Pochette" src="{{ app.request.basepath }}/images/logo0.jpg"></div>
+            <div class="col-md-10">
+                <div id="Artist">Artist</div>
+                <div id="Titre">Titre (Album)</div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div id="slider_seek" class="progress active">
+            <div class="progress-bar progress-bar-info" style="width: 0%;"></div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row text-left">
+            <a class="btn btn-info" href="{{ path('home') }}"> <i class="fa fa-undo fa-4x"></i></a>
+            <img width="10">
+            <div class="btn-group" role="group">
+                <a class="btn btn-danger" onclick="DZ.player.pause(); return false;"> <i  class="fa fa-pause fa-4x"></i></a>
+                <a class="btn btn-success" onclick="DZ.player.prev(); return false;"> <i  class="fa fa-step-backward fa-4x"></i></a>
+                <a class="btn btn-success" onclick="DZ.player.play(); return false;"> <i  class="fa fa-play fa-4x"></i></a>
+                <a class="btn btn-success" onclick="DZ.player.next(); return false;"> <i  class="fa fa-step-forward fa-4x"></i></a>
+            </div>
+            <div class="btn-group" role="group">
+                <a class="btn btn-danger" onclick="DZ.player.setShuffle(false);"> <i  class="fa fa-random fa-4x"></i></a>
+                <a class="btn btn-success" onclick="DZ.player.setShuffle(true);"> <i  class="fa fa-random fa-4x"></i></a>
+            </div>
+            <div class="btn-group" role="group">
+                <a class="btn btn-success" onclick="DZ.player.setVolume(0);"> <i  class="fa fa-volume-off fa-4x"></i></a>
+                <a class="btn btn-success" onclick="DZ.player.setVolume(20);"> <i  class="fa fa-volume-down fa-4x"></i></a>
+                <a class="btn btn-success" onclick="DZ.player.setVolume(80);"> <i  class="fa fa-volume-up fa-4x"></i></a>
+            </div>
+        </div>
+    </div>
+
+        <br/><br/>
+
+
+
+    <script>
+    	$(document).ready(function(){
+    		$("#slider_seek").click(function(evt,arg){
+    			var left = evt.offsetX;
+    			console.log(evt.offsetX, $(this).width(), evt.offsetX/$(this).width());
+    			DZ.player.seek((evt.offsetX/$(this).width()) * 100);
+            });
+    	});
+
+        function event_listener_append() {
+    		var pre = document.getElementById('event_listener');
+    		var line = [];
+    		for (var i = 0; i < arguments.length; i++) {
+    			line.push(arguments[i]);
+    		}
+    		pre.innerHTML = line.join(' ') + "\n" + pre.innerHTML;
+    	}
+        
+    	function onPlayerLoaded() {
+    
+    		event_listener_append('Le lecteur est pret ...');
+            DZ.player.playPlaylist({{ deezerid }});
+
+    		DZ.Event.subscribe('current_track', function(cur_track){
+//      			var key = '5b4ddab2f88e3290edeb4ab4f65189bf80270da2';
+//            	var secret = 'fb93d664b34cb32aab2bcf07f23d98cef29590ac';
+//    			var apims = new MusicStoryApi(key, secret);
+                var cur_track ;
+                var ArtistEl = document.getElementById('Artist');
+                var TitreEl = document.getElementById('Titre');
+                var PochetteEl = document.getElementById('Pochette');
+                var NewArtist = document.createTextNode(cur_track.track.artist.name);
+                var NewTitre = document.createTextNode(cur_track.track.title + '(' + cur_track.track.album.title + ')' );
+                
+                ArtistEl.replaceChild(NewArtist, ArtistEl.firstChild);
+                TitreEl.replaceChild(NewTitre, TitreEl.firstChild);
+
+                event_listener_append('A l ecoute :', cur_track.index, '-', cur_track.track.artist.name, '-', cur_track.track.title, '(', cur_track.track.album.title, ')');
+                DZ.api('/track/' + cur_track.track.id, function(reponse){
+                    document.images.Pochette.src = reponse.album.cover_xl;
+                    document.images.Artist0.src = reponse.artist.picture_xl;
+                });
+
+//                apims.get('Artist', 2, function(artistms) {
+//                    event_listener_append( 'nom ms:', artistms.name );
+//                });
+                
+            });
+ 
+           DZ.Event.subscribe('player_position', function(arg){
+                $("#slider_seek").find('.progress-bar').css('width', (100*arg[0]/arg[1]) + '%');
+            });
+    	}
+    	DZ.init({
+    		appId  : '186864',
+    		channelUrl : 'http://192.168.1.16/minideezer/',
+    		player : {
+    			onload : onPlayerLoaded
+    		}
+    	});
+    </script><br/>
+    Messages : <br/>
+    <pre id="event_listener" style="height:150px;overflow:auto;"></pre>
+    </body>
+    </html>
