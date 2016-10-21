@@ -9,7 +9,9 @@ body {
     padding-top: 10px;
     text-align: center;
 }
-
+i {
+    width: 85px;
+}
 .articleTitle:hover, .articleTitle:focus {
     text-decoration: none;
 }
