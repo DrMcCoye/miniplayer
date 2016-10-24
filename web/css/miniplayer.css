@@ -1,7 +1,7 @@
 body { 
     padding-top: 70px; 
-	background-color: black;
-	color: white;
+	background-color: white;
+	color: black;
 }
 
 .footer {
@@ -12,6 +12,11 @@ body {
 i {
     width: 85px;
 }
+
+.carousel-inner img {
+  margin: auto;
+}
+
 .articleTitle:hover, .articleTitle:focus {
     text-decoration: none;
 }
@@ -46,6 +51,21 @@ i {
     font-size: 1.8em;
 }
 
-#slider_seek {
-    padding: 10px;
+#dz-root {
+    opacity: 0.1;
+}
+
+#panneaucommandes {
+    opacity: 0.1;
+}
+
+div.marquee {
+    white-space:no-wrap;
+    overflow:hidden;
+}
+div.marquee > div.marquee-text {
+    font-size: 2em;
+    white-space:nowrap;
+    display:inline;
+    width:auto;
 }

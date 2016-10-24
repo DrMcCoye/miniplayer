@@ -4,19 +4,17 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
-    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
     <link href="{{ app.request.basepath }}/css/miniplayer.css" rel="stylesheet">
+    <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
     <script type="text/javascript" src="http://cdn-files.deezer.com/js/min/dz.js"></script>
-    <script type="text/javascript" src="{{ app.request.basepath }}/lib/musicstory/MusicStoryAPI.class.min.js"></script>
-    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
     <title>MiniPlayer</title>
 </head>
 
-<body>
+<body style="padding-top: 10px; background-color: black; color: white;">
         
     <!-- Caroussel -->
     <div id="carousel" class="carousel slide" data-ride="carousel">
@@ -26,8 +24,13 @@
             </div>
         </div> 
     </div>
-    <div id="dz-root"></div>
-    
+   
+        <!-- Bloc Biographie
+        ================================================== -->
+        <div class="marquee">
+            <div class='marquee-text' id="bioartiste">...</div>
+        </div>
+        
         <!-- Bloc Pochette / Titrage
         ================================================== -->
         <div class="container-fluid">
@@ -43,14 +46,14 @@
         ================================================== -->
         <div class="container-fluid">
             <div id="slider_seek" class="progress active">
-                <div class="progress-bar progress-bar-info" style="width: 0%;"></div>
+                <div class="progress-bar progress-bar-info" style="width: 0%"></div>
             </div>
         </div>
 
         <!-- Bloc Commandes
         ================================================== -->
         <div class="container-fluid">
-            <div class="row text-left">
+            <div class="row text-left" id="panneaucommandes">
                 <a class="btn btn-info" href="{{ path('home') }}"> <i class="fa fa-undo fa-4x"></i></a>
 
                 <div class="btn-group" role="group">
@@ -70,21 +73,33 @@
         </div>
         <br/><br/>
     </div>
+    <div id="dz-root"></div>
 
 
     <script>
 
-        var boutonplay = document.getElementById('play_btn');
-        var iconeplay = document.getElementById('play_icn');
-        var boutonsh = document.getElementById('shuffle_btn');
+        var boutonplay = document.getElementById('play_btn'),
+            iconeplay = document.getElementById('play_icn'),
+            boutonsh = document.getElementById('shuffle_btn'),
+            ArtistEl = document.getElementById('Artist'),
+            TitreEl = document.getElementById('Titre'),
+            PrgBar = document.getElementById('pgbar'),
+            BioText = document.getElementById('bioartiste'),
+            panneauCommandes = document.getElementById('panneaucommandes');
+        var pubKey = "83f54fdc5926e2c0a0c8fdcd3bcc7ed6";
 
+        function disparait_panneau() {
+    		panneauCommandes.style.opacity = '0.1';
+        };
+        
         // Controle des clicks sur la barre de défilement
     	$(document).ready(function(){
+    		$("#controlers input").attr('disabled', true);
     		$("#slider_seek").click(function(evt,arg){
     			var left = evt.offsetX;
     			console.log(evt.offsetX, $(this).width(), evt.offsetX/$(this).width());
     			DZ.player.seek((evt.offsetX/$(this).width()) * 100);
-            });
+    		});
     	});
 
         // Alimentation fenetre des messages en bas de page (temporaire)
@@ -121,27 +136,34 @@
 
         // Gestion des évenements une fois que le lecteur est pret
     	function onPlayerLoaded() {
-    
+       		$("#controlers input").attr('disabled', false);
     		event_listener_append('Le lecteur est pret ...');
             // Mise en lecture de la playlist en parametre
             DZ.player.playPlaylist({{ deezerid }});
 
     		// Actions suite au changement de chanson
             DZ.Event.subscribe('current_track', function(cur_track){
-      			var key = '5b4ddab2f88e3290edeb4ab4f65189bf80270da2';
-            	var secret = 'fb93d664b34cb32aab2bcf07f23d98cef29590ac';
-    			var apims = new MusicStoryApi(key, secret);
                 var cur_track ;
-                var ArtistEl = document.getElementById('Artist');
-                var TitreEl = document.getElementById('Titre');
-                var PochetteEl = document.getElementById('Pochette');
-                var NewArtist = document.createTextNode(cur_track.track.artist.name);
-                var NewTitre = document.createTextNode(cur_track.track.title + ' (' + cur_track.track.album.title + ')' );
+                var nomArtist = cur_track.track.artist.name ,
+                    nomTitre = cur_track.track.title ,
+                    nomAlbum = cur_track.track.album.title ;
+                var NewArtist = document.createTextNode(nomArtist);
+                var NewTitre = document.createTextNode(nomTitre + ' (' + nomAlbum + ')' );
                 
                 ArtistEl.replaceChild(NewArtist, ArtistEl.firstChild);
                 TitreEl.replaceChild(NewTitre, TitreEl.firstChild);
+                
+                $.ajax({
+                    url: "http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=" + nomArtist + "&api_key=" + pubKey + "&format=json&lang=fr"        
+                }).then(function(data) {
+                    var BioTextElNew = document.createTextNode(data.artist.bio.content);
+                    BioText.firstChild.data = data.artist.bio.content;
+                    $('div.marquee').css('text-indent',$('div.marquee').width());
+                    $('div.marquee').each(function() {});
+                });
 
-                event_listener_append('A l ecoute :', cur_track.index, '-', cur_track.track.artist.name, '-', cur_track.track.title, '(', cur_track.track.album.title, ')');
+
+                event_listener_append('A l ecoute :', cur_track.index, '-', nomArtist, '-', cur_track.track.title, '(', cur_track.track.album.title, ')');
                 DZ.api('/track/' + cur_track.track.id, function(reponse){
                     document.images.Pochette.src = reponse.album.cover_xl;
                     document.images.Artist0.src = reponse.artist.picture_xl;
@@ -154,9 +176,9 @@
             });
  
             // Actions suite au changement de position dans la chanson
-            DZ.Event.subscribe('player_position', function(arg){
-                $("#slider_seek").find('.progress-bar').css('width', (100*arg[0]/arg[1]) + '%');
-            });
+                DZ.Event.subscribe('player_position', function(arg){
+                    $(".progress-bar").css('width', (100*arg[0]/arg[1]) + '%');
+                });
     	}
 
         //Initialisation du lecteur
@@ -178,6 +200,15 @@
             toggle_play();
         });
 
+        // Gestion de l'affichage du panneau de controle (disparait au bout de 2 secondes
+        // si la souris ne bouge plus
+        document.addEventListener('mousemove', function(e) {
+            if (panneauCommandes.style.opacity !== '1') {
+                panneauCommandes.style.opacity = '1';
+                setTimeout(disparait_panneau, 5000); 
+            };
+        });
+        
         // Controles via les touches du clavier
         document.addEventListener('keydown', function(e) {
         switch(e.keyCode) {
@@ -205,7 +236,86 @@
                 break;
         };
     });
+
+    // Fonctions nécessaires pour le scrolling de texte
+    (function($) {
+        $.fn.textWidth = function(){
+             var calc = '<span style="display:none">' + $(this).text() + '</span>';
+             $('body').append(calc);
+             var width = $('body').find('span:last').width();
+             $('body').find('span:last').remove();
+            return width;
+        };
         
+        $.fn.marquee = function(args) {
+            var that = $(this);
+            var textWidth = that.textWidth(),
+                offset = that.width(),
+                width = offset,
+                css = {
+                    'text-indent' : that.css('text-indent'),
+                    'overflow' : that.css('overflow'),
+                    'white-space' : that.css('white-space')
+                },
+                marqueeCss = {
+                    'text-indent' : width,
+                    'overflow' : 'hidden',
+                    'white-space' : 'nowrap'
+                },
+                args = $.extend(true, { count: -1, speed: 1e1, leftToRight: false }, args),
+                i = 0,
+                stop = textWidth*-1,
+                dfd = $.Deferred();
+            
+            function go() {
+                if(!that.length) return dfd.reject();
+                if(width == stop) {
+                    i++;
+                    if(i == args.count) {
+                        that.css(css);
+                        return dfd.resolve();
+                    }
+                    if(args.leftToRight) {
+                        width = textWidth*-1;
+                    } else {
+                        width = offset;
+                    }
+                }
+                that.css('text-indent', width + 'px');
+                if(args.leftToRight) {
+                    width++;
+                } else {
+                    width--;
+                }
+                setTimeout(go, args.speed);
+            };
+            if(args.leftToRight) {
+                width = textWidth*-1;
+                width++;
+                stop = offset;
+            } else {
+                width--;            
+            }
+            that.css(marqueeCss);
+            go();
+            return dfd.promise();
+        };
+    })(jQuery);
+
+    var marquee = $('div.marquee');
+
+    marquee.each(function() {
+        var mar = $(this),indent = mar.width();
+        mar.marquee = function() {
+            indent--;
+            mar.css('text-indent',indent);
+            if (indent < -1 * mar.children('div.marquee-text').width()) {
+                indent = mar.width();
+            }
+        };
+        mar.data('interval',setInterval(mar.marquee,1000/60));
+    });
+
     </script>
     
     <br/>
